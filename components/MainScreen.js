@@ -4,8 +4,8 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import {
   setUsers,
@@ -23,11 +23,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const MainScreen = () => {
   const dispatch = useDispatch();
   const users = useSelector((state) => state.users.data);
-  const [loadingState, setLoadingState] = useState("idle"); // Can be 'idle', 'loading', 'loadMoreLoading'
+  const [loadingState, setLoadingState] = useState("idle"); // 'idle', 'loading', 'loadMoreLoading'
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const limit = 4;
 
+  // Load data function
   const loadData = async (isLoadMore = false) => {
     setLoadingState(isLoadMore ? "loadMoreLoading" : "loading");
     try {
@@ -39,6 +40,10 @@ const MainScreen = () => {
 
       if (isLoadMore) {
         dispatch(addUsers(newUsers));
+        const cachedUsers =
+          JSON.parse(await AsyncStorage.getItem("users")) || [];
+        const updatedCache = [...cachedUsers, ...newUsers];
+        await AsyncStorage.setItem("users", JSON.stringify(updatedCache));
         setPage(page + 1);
       } else {
         dispatch(setUsers(newUsers));
